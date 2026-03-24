@@ -20,6 +20,7 @@ class TaskResource extends JsonResource
             'assigned_to' => $this->assigned_to,
             'assignee'    => UserResource::make($this->whenLoaded('assignee')),
             'status_logs' => TaskStatusLogResource::collection($this->whenLoaded('statusLogs')),
+            'comments'    => CommentResource::collection($this->whenLoaded('comments')),
             'deleted_at'  => $this->deleted_at,
             'created_at'  => $this->created_at,
             'updated_at'  => $this->updated_at,

@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\ProjectRole;
+use App\Enums\ProjectRoleEnum;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Role;
@@ -20,7 +20,7 @@ class ProjectService
     {
         $project = $user->projects()->create($data);
 
-        $ownerRole = Role::where('name', ProjectRole::Owner->value)->firstOrFail();
+        $ownerRole = Role::where('name', ProjectRoleEnum::Owner->value)->firstOrFail();
 
         ProjectMember::create([
             'project_id' => $project->id,

@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ProjectStatus;
+use App\Enums\ProjectStatusEnum;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,7 +21,7 @@ it('creates a project and returns 201 with the resource', function () {
     $response->assertStatus(201)
         ->assertJsonStructure(['data' => ['id', 'name', 'description', 'status', 'due_date'], 'message'])
         ->assertJsonPath('data.name', 'New Project')
-        ->assertJsonPath('data.status', ProjectStatus::Active->value)
+        ->assertJsonPath('data.status', ProjectStatusEnum::Active->value)
         ->assertJsonPath('message', 'Project created successfully.');
 
     expect(Project::where('name', 'New Project')->where('user_id', $user->id)->exists())->toBeTrue();

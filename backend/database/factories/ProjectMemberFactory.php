@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Enums\ProjectRole;
+use App\Enums\ProjectRoleEnum;
 use App\Models\Project;
 use App\Models\Role;
 use App\Models\User;
@@ -15,28 +15,28 @@ class ProjectMemberFactory extends Factory
         return [
             'project_id' => Project::factory(),
             'user_id'    => User::factory(),
-            'role_id'    => fn () => Role::where('name', ProjectRole::Member->value)->value('id'),
+            'role_id'    => fn () => Role::where('name', ProjectRoleEnum::Member->value)->value('id'),
         ];
     }
 
     public function owner(): static
     {
         return $this->state(fn () => [
-            'role_id' => Role::where('name', ProjectRole::Owner->value)->value('id'),
+            'role_id' => Role::where('name', ProjectRoleEnum::Owner->value)->value('id'),
         ]);
     }
 
     public function admin(): static
     {
         return $this->state(fn () => [
-            'role_id' => Role::where('name', ProjectRole::Admin->value)->value('id'),
+            'role_id' => Role::where('name', ProjectRoleEnum::Admin->value)->value('id'),
         ]);
     }
 
     public function member(): static
     {
         return $this->state(fn () => [
-            'role_id' => Role::where('name', ProjectRole::Member->value)->value('id'),
+            'role_id' => Role::where('name', ProjectRoleEnum::Member->value)->value('id'),
         ]);
     }
 }

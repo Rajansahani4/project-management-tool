@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\TaskPriority;
-use App\Enums\TaskStatus;
+use App\Enums\TaskPriorityEnum;
+use App\Enums\TaskStatusEnum;
 use Database\Factories\TaskFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,8 +26,8 @@ class Task extends Model
     protected function casts(): array
     {
         return [
-            'status'   => TaskStatus::class,
-            'priority' => TaskPriority::class,
+            'status'   => TaskStatusEnum::class,
+            'priority' => TaskPriorityEnum::class,
             'due_date' => 'date',
         ];
     }
@@ -45,5 +45,10 @@ class Task extends Model
     public function statusLogs(): HasMany
     {
         return $this->hasMany(TaskStatusLog::class)->latest();
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class)->oldest();
     }
 }

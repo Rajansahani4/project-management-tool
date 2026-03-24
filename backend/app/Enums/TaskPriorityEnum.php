@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum TaskPriority: string
+enum TaskPriorityEnum: string
 {
     case Low    = 'low';
     case Medium = 'medium';

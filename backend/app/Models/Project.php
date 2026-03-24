@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Enums\ProjectStatus;
+use App\Enums\ProjectStatusEnum;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -23,7 +23,7 @@ class Project extends Model
     protected function casts(): array
     {
         return [
-            'status'   => ProjectStatus::class,
+            'status'   => ProjectStatusEnum::class,
             'due_date' => 'date',
         ];
     }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ProjectRole;
+use App\Enums\ProjectRoleEnum;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Role;
@@ -16,7 +16,7 @@ beforeEach(function () {
     $this->token   = JWTAuth::fromUser($this->owner);
     $this->project = Project::factory()->create(['user_id' => $this->owner->id]);
 
-    $ownerRole = Role::where('name', ProjectRole::Owner->value)->firstOrFail();
+    $ownerRole = Role::where('name', ProjectRoleEnum::Owner->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $this->owner->id,
@@ -54,7 +54,7 @@ it('partial update only changes provided fields', function () {
 
 it('assignee can update the task', function () {
     $member     = User::factory()->create();
-    $memberRole = Role::where('name', ProjectRole::Member->value)->firstOrFail();
+    $memberRole = Role::where('name', ProjectRoleEnum::Member->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $member->id,
@@ -73,7 +73,7 @@ it('assignee can update the task', function () {
 
 it('regular member who is not assignee cannot update task', function () {
     $member     = User::factory()->create();
-    $memberRole = Role::where('name', ProjectRole::Member->value)->firstOrFail();
+    $memberRole = Role::where('name', ProjectRoleEnum::Member->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $member->id,
@@ -99,7 +99,7 @@ it('rejects title shorter than 5 characters on update', function () {
 
 it('admin can update task', function () {
     $admin     = User::factory()->create();
-    $adminRole = Role::where('name', ProjectRole::Admin->value)->firstOrFail();
+    $adminRole = Role::where('name', ProjectRoleEnum::Admin->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $admin->id,

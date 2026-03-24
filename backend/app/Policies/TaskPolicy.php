@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use App\Enums\ProjectRole;
+use App\Enums\ProjectRoleEnum;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Task;
@@ -65,8 +65,8 @@ class TaskPolicy
         return ProjectMember::where('project_id', $project->id)
             ->where('user_id', $user->id)
             ->whereHas('role', fn ($q) => $q->whereIn('name', [
-                ProjectRole::Owner->value,
-                ProjectRole::Admin->value,
+                ProjectRoleEnum::Owner->value,
+                ProjectRoleEnum::Admin->value,
             ]))
             ->exists();
     }

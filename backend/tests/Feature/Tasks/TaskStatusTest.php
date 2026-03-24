@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\ProjectRole;
-use App\Enums\TaskStatus;
+use App\Enums\ProjectRoleEnum;
+use App\Enums\TaskStatusEnum;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Role;
@@ -18,7 +18,7 @@ beforeEach(function () {
     $this->token   = JWTAuth::fromUser($this->owner);
     $this->project = Project::factory()->create(['user_id' => $this->owner->id]);
 
-    $ownerRole = Role::where('name', ProjectRole::Owner->value)->firstOrFail();
+    $ownerRole = Role::where('name', ProjectRoleEnum::Owner->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $this->owner->id,
@@ -35,7 +35,7 @@ it('any project member can change task status', function () {
         ]);
 
     $response->assertOk()
-        ->assertJsonPath('data.status', TaskStatus::InProgress->value)
+        ->assertJsonPath('data.status', TaskStatusEnum::InProgress->value)
         ->assertJsonPath('message', 'Task status updated successfully.');
 });
 
@@ -49,8 +49,8 @@ it('creates a status log entry on status change', function () {
 
     $log = TaskStatusLog::first();
     expect($log->task_id)->toBe($this->task->id)
-        ->and($log->from_status)->toBe(TaskStatus::Todo->value)
-        ->and($log->to_status)->toBe(TaskStatus::InProgress->value)
+        ->and($log->from_status)->toBe(TaskStatusEnum::Todo->value)
+        ->and($log->to_status)->toBe(TaskStatusEnum::InProgress->value)
         ->and($log->changed_by)->toBe($this->owner->id);
 });
 
@@ -95,7 +95,7 @@ it('returns 403 when a non-member changes task status', function () {
 
 it('regular member can also change task status', function () {
     $member     = User::factory()->create();
-    $memberRole = Role::where('name', ProjectRole::Member->value)->firstOrFail();
+    $memberRole = Role::where('name', ProjectRoleEnum::Member->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $member->id,

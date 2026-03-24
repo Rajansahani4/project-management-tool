@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\TaskStatus;
+use App\Enums\TaskStatusEnum;
 use App\Http\Requests\AssignTaskRequest;
 use App\Http\Requests\StoreTaskRequest;
 use App\Http\Requests\UpdateTaskRequest;
@@ -44,7 +44,7 @@ class TaskController extends Controller
     {
         $this->authorize('view', $task);
 
-        $task->load(['assignee', 'statusLogs.changedBy']);
+        $task->load(['assignee', 'statusLogs.changedBy', 'comments.user']);
 
         return response()->json([
             'data'    => TaskResource::make($task),
@@ -94,7 +94,7 @@ class TaskController extends Controller
 
         $task = $this->taskService->updateTaskStatus(
             task: $task,
-            newStatus: TaskStatus::from($request->string('status')->toString()),
+            newStatus: TaskStatusEnum::from($request->string('status')->toString()),
             changedBy: $request->user(),
         );
 

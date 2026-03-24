@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\TaskStatus;
+use App\Enums\TaskStatusEnum;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\TaskStatusLog;
@@ -23,7 +23,7 @@ class TaskService
         return $task->fresh();
     }
 
-    public function updateTaskStatus(Task $task, TaskStatus $newStatus, User $changedBy): Task
+    public function updateTaskStatus(Task $task, TaskStatusEnum $newStatus, User $changedBy): Task
     {
         $fromStatus = $task->status;
 
@@ -46,7 +46,7 @@ class TaskService
         return $task->fresh();
     }
 
-    public function getTasksByStatus(Project $project, TaskStatus $status): Collection
+    public function getTasksByStatus(Project $project, TaskStatusEnum $status): Collection
     {
         return $project->tasks()
             ->where('status', $status->value)

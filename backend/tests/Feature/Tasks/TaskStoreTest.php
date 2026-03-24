@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\ProjectRole;
-use App\Enums\TaskStatus;
+use App\Enums\ProjectRoleEnum;
+use App\Enums\TaskStatusEnum;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Role;
@@ -17,7 +17,7 @@ beforeEach(function () {
     $this->token   = JWTAuth::fromUser($this->owner);
     $this->project = Project::factory()->create(['user_id' => $this->owner->id]);
 
-    $ownerRole = Role::where('name', ProjectRole::Owner->value)->firstOrFail();
+    $ownerRole = Role::where('name', ProjectRoleEnum::Owner->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $this->owner->id,
@@ -37,7 +37,7 @@ it('creates a task in a project', function () {
     $response->assertCreated()
         ->assertJsonPath('data.title', 'Fix critical login bug')
         ->assertJsonPath('data.priority', 'high')
-        ->assertJsonPath('data.status', TaskStatus::Todo->value)
+        ->assertJsonPath('data.status', TaskStatusEnum::Todo->value)
         ->assertJsonPath('data.project_id', $this->project->id);
 
     expect(Task::count())->toBe(1);

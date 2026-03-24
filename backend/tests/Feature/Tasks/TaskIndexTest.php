@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\ProjectRole;
-use App\Enums\TaskStatus;
+use App\Enums\ProjectRoleEnum;
+use App\Enums\TaskStatusEnum;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Role;
@@ -17,7 +17,7 @@ beforeEach(function () {
     $this->token   = JWTAuth::fromUser($this->owner);
     $this->project = Project::factory()->create(['user_id' => $this->owner->id]);
 
-    $ownerRole = Role::where('name', ProjectRole::Owner->value)->firstOrFail();
+    $ownerRole = Role::where('name', ProjectRoleEnum::Owner->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $this->owner->id,
@@ -46,13 +46,13 @@ it('filters tasks by status', function () {
         ->assertJsonCount(3, 'data');
 
     collect($response->json('data'))->each(
-        fn ($task) => expect($task['status'])->toBe(TaskStatus::InProgress->value)
+        fn ($task) => expect($task['status'])->toBe(TaskStatusEnum::InProgress->value)
     );
 });
 
 it('filters tasks by assigned_to', function () {
     $member     = User::factory()->create();
-    $memberRole = Role::where('name', ProjectRole::Member->value)->firstOrFail();
+    $memberRole = Role::where('name', ProjectRoleEnum::Member->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $member->id,

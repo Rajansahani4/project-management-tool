@@ -1,6 +1,6 @@
 <?php
 
-use App\Enums\ProjectRole;
+use App\Enums\ProjectRoleEnum;
 use App\Models\Project;
 use App\Models\ProjectMember;
 use App\Models\Role;
@@ -16,7 +16,7 @@ beforeEach(function () {
     $this->token   = JWTAuth::fromUser($this->owner);
     $this->project = Project::factory()->create(['user_id' => $this->owner->id]);
 
-    $ownerRole = Role::where('name', ProjectRole::Owner->value)->firstOrFail();
+    $ownerRole = Role::where('name', ProjectRoleEnum::Owner->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $this->owner->id,
@@ -28,7 +28,7 @@ beforeEach(function () {
 
 it('owner assigns a task to a project member', function () {
     $member     = User::factory()->create();
-    $memberRole = Role::where('name', ProjectRole::Member->value)->firstOrFail();
+    $memberRole = Role::where('name', ProjectRoleEnum::Member->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $member->id,
@@ -58,7 +58,7 @@ it('cannot assign task to a non-team member', function () {
 
 it('regular member cannot assign tasks', function () {
     $member     = User::factory()->create();
-    $memberRole = Role::where('name', ProjectRole::Member->value)->firstOrFail();
+    $memberRole = Role::where('name', ProjectRoleEnum::Member->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $member->id,
@@ -74,7 +74,7 @@ it('regular member cannot assign tasks', function () {
 
 it('admin can assign a task to a project member', function () {
     $admin     = User::factory()->create();
-    $adminRole = Role::where('name', ProjectRole::Admin->value)->firstOrFail();
+    $adminRole = Role::where('name', ProjectRoleEnum::Admin->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $admin->id,
@@ -82,7 +82,7 @@ it('admin can assign a task to a project member', function () {
     ]);
 
     $member     = User::factory()->create();
-    $memberRole = Role::where('name', ProjectRole::Member->value)->firstOrFail();
+    $memberRole = Role::where('name', ProjectRoleEnum::Member->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $member->id,
@@ -99,7 +99,7 @@ it('admin can assign a task to a project member', function () {
 
 it('owner can unassign a task by passing null user_id', function () {
     $member     = User::factory()->create();
-    $memberRole = Role::where('name', ProjectRole::Member->value)->firstOrFail();
+    $memberRole = Role::where('name', ProjectRoleEnum::Member->value)->firstOrFail();
     ProjectMember::factory()->create([
         'project_id' => $this->project->id,
         'user_id'    => $member->id,
