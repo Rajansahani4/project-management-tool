@@ -78,36 +78,7 @@
 
 ### Migration Safety Rules
 - **Table creation**: always guard with `if (! Schema::hasTable('table_name'))` before `Schema::create()`
-- **Column addition**: alRefactor the Laravel project with the following requirements:
-
-1. Rename all Enum classes:
-   - Add the suffix "Enum" to every enum class.
-   - Example: TaskStatus → TaskStatusEnum
-
-2. Update all usages:
-   - Replace all references to the renamed enums across the entire codebase (models, controllers, services, requests, etc.).
-   - Ensure imports (`use` statements) are also updated accordingly.
-
-3. Improve migrations with schema checks:
-   - When creating tables, always wrap with:
-     if (!Schema::hasTable('table_name')) { ... }
-
-   - When adding columns, ensure checks like:
-     if (!Schema::hasColumn('table_name', 'column_name')) { ... }
-
-   - Apply this consistently across all migration files.
-
-4. Update documentation:
-   - Modify the claude.md file to include:
-     - Enum naming convention (must end with "Enum")
-     - Migration safety rules (Schema::hasTable, Schema::hasColumn usage)
-
-5. Ensure:
-   - No breaking changes
-   - Code remains clean and consistent with Laravel best practices
-   - All changes are applied project-wide
-
-Provide a summary of all changes made.ways guard with `if (! Schema::hasColumn('table', 'column'))` before adding a column to an existing table
+- **Column addition**: always guard with `if (! Schema::hasColumn('table', 'column'))` before adding a column to an existing table
 - These checks prevent errors when migrations are re-run or applied on pre-seeded environments
 - Example:
   ```php

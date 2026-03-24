@@ -44,7 +44,7 @@ class TaskController extends Controller
     {
         $this->authorize('view', $task);
 
-        $task->load(['assignee', 'statusLogs.changedBy', 'comments.user']);
+        $task->load(['assignee', 'statusLogs.changedBy', 'comments.user', 'attachments.user']);
 
         return response()->json([
             'data'    => TaskResource::make($task),

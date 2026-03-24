@@ -51,4 +51,9 @@ class Task extends Model
     {
         return $this->hasMany(Comment::class)->oldest();
     }
+
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(Attachment::class)->latest();
+    }
 }
