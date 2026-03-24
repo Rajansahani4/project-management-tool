@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\ProjectRole;
 use App\Models\Project;
+use App\Models\ProjectMember;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -15,7 +18,17 @@ class ProjectService
 
     public function store(User $user, array $data): Project
     {
-        return $user->projects()->create($data);
+        $project = $user->projects()->create($data);
+
+        $ownerRole = Role::where('name', ProjectRole::Owner->value)->firstOrFail();
+
+        ProjectMember::create([
+            'project_id' => $project->id,
+            'user_id'    => $user->id,
+            'role_id'    => $ownerRole->id,
+        ]);
+
+        return $project;
     }
 
     public function update(Project $project, array $data): Project

@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\TaskController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -20,5 +21,12 @@ Route::prefix('v1')->group(function () {
 
     Route::middleware('auth:api')->group(function () {
         Route::apiResource('projects', ProjectController::class);
+
+        Route::prefix('projects/{project}')->group(function () {
+            Route::apiResource('tasks', TaskController::class);
+            Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.updateStatus');
+            Route::patch('tasks/{task}/assign', [TaskController::class, 'assign'])->name('tasks.assign');
+            Route::post('tasks/{id}/restore', [TaskController::class, 'restore'])->name('tasks.restore');
+        });
     });
 });
