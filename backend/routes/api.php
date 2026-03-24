@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\MeController;
 use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\ProjectController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -15,5 +16,9 @@ Route::prefix('v1')->group(function () {
             Route::post('logout', LogoutController::class);
             Route::get('me', MeController::class);
         });
+    });
+
+    Route::middleware('auth:api')->group(function () {
+        Route::apiResource('projects', ProjectController::class);
     });
 });
