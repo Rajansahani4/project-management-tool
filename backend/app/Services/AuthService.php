@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use PHPOpenSourceSaver\JWTAuth\Exceptions\JWTException;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
@@ -34,5 +36,26 @@ class AuthService
             'token_type' => 'bearer',
             'expires_in' => config('jwt.ttl') * 60,
         ];
+    }
+
+    public function updateProfile(User $user, string $name): User
+    {
+        $user->update(['name' => $name]);
+
+        return $user->fresh();
+    }
+
+    /**
+     * @throws ValidationException
+     */
+    public function changePassword(User $user, string $currentPassword, string $newPassword): void
+    {
+        if (! Hash::check($currentPassword, $user->password)) {
+            throw ValidationException::withMessages([
+                'current_password' => ['The provided password does not match your current password.'],
+            ]);
+        }
+
+        $user->update(['password' => Hash::make($newPassword)]);
     }
 }
