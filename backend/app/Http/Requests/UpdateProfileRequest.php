@@ -2,11 +2,9 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\ProjectRoleEnum;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class UpdateProjectMemberRequest extends FormRequest
+class UpdateProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,7 +14,7 @@ class UpdateProjectMemberRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role' => ['required', Rule::in([ProjectRoleEnum::Admin->value, ProjectRoleEnum::Member->value])],
+            'name' => ['required', 'string', 'max:255'],
         ];
     }
 }

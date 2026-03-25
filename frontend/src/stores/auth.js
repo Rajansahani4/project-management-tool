@@ -77,6 +77,11 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('auth_token')
   }
 
+  // Public alias used by the router guard when a token proves invalid
+  function clearSession() {
+    _clearCredentials()
+  }
+
   return {
     user,
     token,
@@ -87,5 +92,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     fetchUser,
+    clearSession,
   }
 })

@@ -7,7 +7,6 @@ use App\Models\ProjectMember;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class ProjectMemberService
@@ -69,7 +68,7 @@ class ProjectMemberService
 
         $member->update(['role_id' => $role->id]);
 
-        return $member->load(['user', 'role'])->fresh();
+        return $member->load(['user', 'role']);
     }
 
     /**

@@ -97,7 +97,7 @@ router.beforeEach(async (to) => {
       await auth.fetchUser()
     } catch {
       // Token is invalid/expired — clear it and force login
-      auth._clearCredentials?.()
+      auth.clearSession()
       if (to.meta.requiresAuth) {
         return { name: 'login', query: { redirect: to.fullPath } }
       }

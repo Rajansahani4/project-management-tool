@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use App\Enums\ProjectRoleEnum;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
+use Illuminate\Validation\Rule;
 
 class AddProjectMemberRequest extends FormRequest
 {
@@ -17,7 +17,7 @@ class AddProjectMemberRequest extends FormRequest
     {
         return [
             'email' => ['required', 'email'],
-            'role'  => ['required', 'string', 'in:admin,member'],
+            'role'  => ['required', Rule::in([ProjectRoleEnum::Admin->value, ProjectRoleEnum::Member->value])],
         ];
     }
 }

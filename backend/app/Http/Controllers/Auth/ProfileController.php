@@ -3,25 +3,24 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\UserResource;
+use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
-    public function update(Request $request): JsonResponse
+    public function __construct(private readonly AuthService $authService) {}
+
+    public function update(UpdateProfileRequest $request): JsonResponse
     {
-        $user = $request->user();
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-        ]);
-
-        $user->update($validated);
+        $user = $this->authService->updateProfile(
+            user: $request->user(),
+            name: $request->string('name')->toString(),
+        );
 
         return response()->json([
-            'data'    => UserResource::make($user->fresh()),
+            'data'    => UserResource::make($user),
             'message' => 'Profile updated successfully.',
         ]);
     }

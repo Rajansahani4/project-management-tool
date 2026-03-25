@@ -3,31 +3,21 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ChangePasswordRequest;
+use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class ChangePasswordController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __construct(private readonly AuthService $authService) {}
+
+    public function __invoke(ChangePasswordRequest $request): JsonResponse
     {
-        $user = $request->user();
-
-        $request->validate([
-            'current_password'      => ['required', 'string'],
-            'password'              => ['required', 'string', 'min:8', 'confirmed'],
-        ]);
-
-        if (! Hash::check($request->string('current_password'), $user->password)) {
-            throw ValidationException::withMessages([
-                'current_password' => ['The provided password does not match your current password.'],
-            ]);
-        }
-
-        $user->update([
-            'password' => Hash::make($request->string('password')),
-        ]);
+        $this->authService->changePassword(
+            user:            $request->user(),
+            currentPassword: $request->string('current_password')->toString(),
+            newPassword:     $request->string('password')->toString(),
+        );
 
         return response()->json([
             'data'    => null,
