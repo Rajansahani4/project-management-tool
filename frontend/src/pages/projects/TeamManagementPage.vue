@@ -213,7 +213,7 @@ onMounted(async () => {
               v-if="isOwner && member.role !== 'owner'"
               :value="member.role"
               class="rounded-md border border-gray-200 py-1 pl-2 pr-7 text-xs font-medium text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              @change="changeRole(member.user?.id ?? member.user_id, $event.target.value)"
+              @change="changeRole(member.id, $event.target.value)"
             >
               <option v-for="opt in roleOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
             </select>
@@ -226,11 +226,11 @@ onMounted(async () => {
           <button
             v-if="isOwner && member.role !== 'owner'"
             class="shrink-0 rounded-md p-1.5 text-gray-400 transition hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
-            :disabled="removingId === (member.user?.id ?? member.user_id)"
+            :disabled="removingId === member.id"
             :aria-label="`Remove ${member.user?.name}`"
-            @click="removeMember(member.user?.id ?? member.user_id)"
+            @click="removeMember(member.id)"
           >
-            <svg v-if="removingId === (member.user?.id ?? member.user_id)" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+            <svg v-if="removingId === member.id" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>

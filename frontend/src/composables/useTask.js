@@ -23,9 +23,7 @@ export function useTask() {
   }
 
   async function create(projectId, payload) {
-    const task = await store.create(projectId, payload)
-    ui.success('Task created.')
-    return task
+    return store.create(projectId, payload)
   }
 
   async function update(projectId, taskId, payload) {

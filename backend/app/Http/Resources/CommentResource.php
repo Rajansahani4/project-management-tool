@@ -14,7 +14,8 @@ class CommentResource extends JsonResource
             'task_id'    => $this->task_id,
             'user_id'    => $this->user_id,
             'content'    => $this->content,
-            'user'       => UserResource::make($this->whenLoaded('user')),
+            'is_own'     => $this->user_id === $request->user()?->id,
+            'author'     => UserResource::make($this->whenLoaded('user')),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -1,9 +1,11 @@
 <script setup>
-import { onMounted, computed, ref, reactive } from 'vue'
+import { onMounted, watch, computed, ref, reactive } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { useProject } from '@/composables/useProject.js'
 import { useTask } from '@/composables/useTask.js'
 import { useTaskStore } from '@/stores/tasks.js'
+import { useProjectStore } from '@/stores/projects.js'
+import { useMembersStore } from '@/stores/members.js'
 import { useProjectChannel } from '@/composables/useEcho.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useUiStore } from '@/stores/ui.js'
@@ -18,13 +20,15 @@ const props = defineProps({
   id: { type: String, required: true },
 })
 
-const router    = useRouter()
-const authStore = useAuthStore()
-const ui        = useUiStore()
-const taskStore = useTaskStore()
+const router        = useRouter()
+const authStore     = useAuthStore()
+const ui            = useUiStore()
+const taskStore     = useTaskStore()
+const projectStore  = useProjectStore()
+const membersStore  = useMembersStore()
 
-const { current: project, loading: projectLoading, fetchOne, destroy: destroyProject } = useProject()
-const { tasks, loading: taskLoading, fetchAll, create: createTask, errors: taskErrors } = useTask()
+const { current: project, loading: projectLoading, fetchOne, update: updateProject, destroy: destroyProject } = useProject()
+const { tasks, loading: taskLoading, fetchAll, create: createTask, assign: assignTask, errors: taskErrors } = useTask()
 
 const loading = computed(() => projectLoading.value || taskLoading.value)
 
@@ -83,9 +87,51 @@ async function onTaskMoved({ taskId, newStatus }) {
   await taskStore.updateStatus(props.id, taskId, newStatus)
 }
 
+// ── Inline assignee change from kanban card ───────────────────────────────────
+const assigningTaskId = ref(null)
+
+async function onTaskAssigned({ taskId, userId }) {
+  assigningTaskId.value = taskId
+  try {
+    await assignTask(props.id, taskId, userId)
+  } finally {
+    assigningTaskId.value = null
+  }
+}
+
 // ── Navigate to task detail ───────────────────────────────────────────────────
 function onTaskClick(task) {
   router.push({ name: 'task-show', params: { projectId: props.id, taskId: task.id } })
+}
+
+// ── Edit project ─────────────────────────────────────────────────────────────
+const showEditModal  = ref(false)
+const editProjectForm = reactive({ name: '', description: '', status: 'active', due_date: '' })
+const editProjectLoading = ref(false)
+
+const projectStatusOptions = [
+  { value: 'active',      label: 'Active' },
+  { value: 'in_progress', label: 'In Progress' },
+  { value: 'archived',    label: 'Archived' },
+]
+
+function openEditModal() {
+  editProjectForm.name        = project.value?.name ?? ''
+  editProjectForm.description = project.value?.description ?? ''
+  editProjectForm.status      = project.value?.status ?? 'active'
+  editProjectForm.due_date    = project.value?.due_date?.split('T')[0] ?? ''
+  showEditModal.value = true
+}
+
+async function submitEditProject() {
+  if (!editProjectForm.name.trim()) return
+  editProjectLoading.value = true
+  try {
+    await updateProject(props.id, { ...editProjectForm })
+    showEditModal.value = false
+  } finally {
+    editProjectLoading.value = false
+  }
 }
 
 // ── Delete project ────────────────────────────────────────────────────────────
@@ -111,15 +157,22 @@ function statusClass(status) {
   }
 }
 
-onMounted(async () => {
-  await fetchOne(props.id)
-  await fetchAll(props.id)
+async function loadProject(id) {
+  // Clear stale data immediately so the old project doesn't flash
+  projectStore.current = null
+  taskStore.tasks = []
 
-  useProjectChannel(props.id, {
-    onTaskCreated:  (task)       => taskStore._upsert?.(task),
-    onTaskUpdated:  (task)       => taskStore._upsert?.(task),
-  })
-})
+  await Promise.all([
+    fetchOne(id),
+    fetchAll(id),
+    membersStore.fetchAll(id),
+  ])
+}
+
+onMounted(() => loadProject(props.id))
+
+// Re-load when navigating between projects via the sidebar (same component, new param)
+watch(() => props.id, (newId) => loadProject(newId))
 </script>
 
 <template>
@@ -189,6 +242,12 @@ onMounted(async () => {
             </svg>
             Team
           </RouterLink>
+          <AppButton size="sm" variant="secondary" @click="openEditModal">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Edit
+          </AppButton>
           <AppButton size="sm" variant="secondary" @click="showDeleteConfirm = true">
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -242,8 +301,11 @@ onMounted(async () => {
         v-else-if="viewMode === 'kanban'"
         :tasks="filteredTasks"
         :loading="false"
+        :members="membersStore.members"
+        :assigning-task-id="assigningTaskId"
         @task-moved="onTaskMoved"
         @task-click="onTaskClick"
+        @task-assigned="onTaskAssigned"
       />
 
       <!-- ── List view ────────────────────────────────────────────────────── -->
@@ -372,6 +434,52 @@ onMounted(async () => {
         <div class="flex justify-end gap-3 border-t pt-4">
           <AppButton variant="secondary" @click="showCreateModal = false">Cancel</AppButton>
           <AppButton type="submit" :loading="createLoading">Create Task</AppButton>
+        </div>
+      </form>
+    </AppModal>
+
+    <!-- ── Edit project modal ────────────────────────────────────────────── -->
+    <AppModal :open="showEditModal" title="Edit Project" size="md" @close="showEditModal = false">
+      <form class="space-y-4" @submit.prevent="submitEditProject" novalidate>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-gray-700">Project name <span class="text-red-500">*</span></label>
+          <input
+            v-model="editProjectForm.name"
+            type="text"
+            autofocus
+            class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-gray-700">Description</label>
+          <textarea
+            v-model="editProjectForm.description"
+            rows="3"
+            class="w-full resize-none rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700">Status</label>
+            <select
+              v-model="editProjectForm.status"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            >
+              <option v-for="opt in projectStatusOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-sm font-medium text-gray-700">Due date</label>
+            <input
+              v-model="editProjectForm.due_date"
+              type="date"
+              class="w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-sm text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
+          </div>
+        </div>
+        <div class="flex justify-end gap-3 border-t pt-4">
+          <AppButton variant="secondary" @click="showEditModal = false">Cancel</AppButton>
+          <AppButton type="submit" :loading="editProjectLoading" :disabled="!editProjectForm.name.trim()">Save changes</AppButton>
         </div>
       </form>
     </AppModal>

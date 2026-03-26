@@ -6,6 +6,7 @@ import { useTaskChannel } from '@/composables/useEcho.js'
 import { useTaskStore } from '@/stores/tasks.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { useUiStore } from '@/stores/ui.js'
+import { useMembersStore } from '@/stores/members.js'
 import AppSpinner       from '@/components/common/AppSpinner.vue'
 import AppModal         from '@/components/common/AppModal.vue'
 import AppButton        from '@/components/common/AppButton.vue'
@@ -19,10 +20,11 @@ const props = defineProps({
   taskId:    { type: String, required: true },
 })
 
-const router    = useRouter()
-const authStore = useAuthStore()
-const ui        = useUiStore()
-const taskStore = useTaskStore()
+const router        = useRouter()
+const authStore     = useAuthStore()
+const ui            = useUiStore()
+const taskStore     = useTaskStore()
+const membersStore  = useMembersStore()
 
 const {
   current: task,
@@ -31,6 +33,7 @@ const {
   fetchOne,
   update:           updateTask,
   destroy:          destroyTask,
+  assign:           assignTask,
   addComment,
   editComment,
   removeComment,
@@ -42,7 +45,10 @@ const {
 let echoCleanup = null
 
 onMounted(async () => {
-  await fetchOne(props.projectId, props.taskId)
+  await Promise.all([
+    fetchOne(props.projectId, props.taskId),
+    membersStore.fetchAll(props.projectId),
+  ])
 
   echoCleanup = useTaskChannel(props.taskId, {
     onCommentCreated:     (comment)    => taskStore.applyCommentCreated(comment),
@@ -100,17 +106,39 @@ async function confirmDelete() {
   }
 }
 
-// ── Comments ──────────────────────────────────────────────────────────────────
-async function onCommentSubmit(content) {
-  await addComment(props.projectId, props.taskId, { content })
+// ── Assignee ──────────────────────────────────────────────────────────────────
+const assignLoading = ref(false)
+
+async function onAssignChange(userId) {
+  assignLoading.value = true
+  try {
+    await assignTask(props.projectId, props.taskId, userId || null)
+  } finally {
+    assignLoading.value = false
+  }
 }
 
-async function onCommentEdit(commentId, content) {
-  await editComment(props.projectId, props.taskId, commentId, { content })
+// ── Comments ──────────────────────────────────────────────────────────────────
+const commentSubmitting = ref(false)
+
+async function onCommentSubmit(content) {
+  commentSubmitting.value = true
+  try {
+    await addComment(props.projectId, props.taskId, { content })
+    ui.success('Comment posted.')
+  } finally {
+    commentSubmitting.value = false
+  }
+}
+
+async function onCommentEdit({ id, content }) {
+  await editComment(props.projectId, props.taskId, id, { content })
+  ui.success('Comment updated.')
 }
 
 async function onCommentDelete(commentId) {
   await removeComment(props.projectId, props.taskId, commentId)
+  ui.success('Comment deleted.')
 }
 
 // ── Attachments ───────────────────────────────────────────────────────────────
@@ -306,8 +334,7 @@ const priorityOptions = [
             </h2>
             <CommentThread
               :comments="task.comments ?? []"
-              :project-id="projectId"
-              :task-id="taskId"
+              :submitting="commentSubmitting"
               @submit="onCommentSubmit"
               @edit="onCommentEdit"
               @delete="onCommentDelete"
@@ -360,15 +387,36 @@ const priorityOptions = [
             <h3 class="mb-3 text-sm font-semibold text-gray-700">Details</h3>
             <dl class="space-y-3">
               <div>
-                <dt class="text-xs font-medium text-gray-400 uppercase tracking-wide">Assigned to</dt>
-                <dd class="mt-1 flex items-center gap-2">
-                  <template v-if="task.assignee">
-                    <div class="flex h-6 w-6 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 uppercase">
+                <dt class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5">Assigned to</dt>
+                <dd>
+                  <!-- Current assignee display -->
+                  <div v-if="task.assignee" class="mb-2 flex items-center gap-2">
+                    <div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 uppercase shrink-0">
                       {{ task.assignee.name?.charAt(0) }}
                     </div>
-                    <span class="text-sm text-gray-700">{{ task.assignee.name }}</span>
-                  </template>
-                  <span v-else class="text-sm text-gray-400 italic">Unassigned</span>
+                    <span class="text-sm font-medium text-gray-800 truncate">{{ task.assignee.name }}</span>
+                  </div>
+                  <!-- Dropdown -->
+                  <div class="relative">
+                    <select
+                      :value="task.assigned_to ?? ''"
+                      :disabled="assignLoading || membersStore.loading"
+                      class="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      @change="onAssignChange($event.target.value)"
+                    >
+                      <option value="">— Unassigned —</option>
+                      <option
+                        v-for="member in membersStore.members"
+                        :key="member.user.id"
+                        :value="member.user.id"
+                      >
+                        {{ member.user.name }}
+                      </option>
+                    </select>
+                    <div v-if="assignLoading" class="absolute right-2 top-1/2 -translate-y-1/2">
+                      <AppSpinner size="xs" />
+                    </div>
+                  </div>
                 </dd>
               </div>
 

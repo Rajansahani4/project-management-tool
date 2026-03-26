@@ -13,7 +13,7 @@ const router       = useRouter()
 const projectStore = useProjectStore()
 const ui           = useUiStore()
 
-const form   = reactive({ name: '', description: '' })
+const form   = reactive({ name: '', description: '', due_date: '' })
 const saving = ref(false)
 
 async function handleSubmit() {
@@ -107,6 +107,16 @@ const breadcrumbs = [
           :rows="4"
           hint="A brief description helps team members understand the project goals"
         />
+
+        <div>
+          <label class="mb-1.5 block text-sm font-medium text-[#172B4D]">Due date <span class="text-[#6B778C] font-normal">(optional)</span></label>
+          <input
+            v-model="form.due_date"
+            type="date"
+            class="block w-full rounded border border-[#DFE1E6] px-3.5 py-2.5 text-sm text-[#172B4D] shadow-sm focus:border-[#0052CC] focus:outline-none focus:ring-2 focus:ring-[#0052CC]"
+          />
+          <p v-if="projectStore.errors?.due_date?.[0]" class="mt-1.5 text-xs text-red-600">{{ projectStore.errors.due_date[0] }}</p>
+        </div>
 
         <!-- Actions -->
         <div class="flex items-center justify-end gap-3 pt-2 border-t border-[#DFE1E6]">
