@@ -31,7 +31,7 @@ function reposition() {
   if (left < 8) left = 8
   if (left + picker.width > vp.w - 8) left = vp.w - picker.width - 8
 
-  style.value = { top: `${top + window.scrollY}px`, left: `${left}px` }
+  style.value = { top: `${top}px`, left: `${left}px` }
 }
 
 watch(() => props.anchorEl, async () => {

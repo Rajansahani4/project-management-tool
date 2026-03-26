@@ -43,7 +43,10 @@ function saveEdit() {
         <time :datetime="comment.created_at" class="text-xs text-gray-400">
           {{ formatDateTime(comment.created_at) }}
         </time>
-        <span v-if="comment.updated_at !== comment.created_at" class="text-xs text-gray-300 italic">
+        <span
+          v-if="Math.abs(new Date(comment.updated_at) - new Date(comment.created_at)) > 2000"
+          class="text-xs text-gray-300 italic"
+        >
           (edited)
         </span>
       </div>

@@ -109,10 +109,11 @@ async function confirmDelete() {
 // ── Assignee ──────────────────────────────────────────────────────────────────
 const assignLoading = ref(false)
 
-async function onAssignChange(userId) {
+async function onAssignChange(rawValue) {
+  const userId = rawValue === '' ? null : Number(rawValue)
   assignLoading.value = true
   try {
-    await assignTask(props.projectId, props.taskId, userId || null)
+    await assignTask(props.projectId, props.taskId, userId)
   } finally {
     assignLoading.value = false
   }
