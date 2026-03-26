@@ -43,7 +43,7 @@ class TaskService
     {
         $task->update(['assigned_to' => $userId]);
 
-        return $task->fresh();
+        return $task->fresh(['assignee']);
     }
 
     public function getTasksByStatus(Project $project, TaskStatusEnum $status): Collection

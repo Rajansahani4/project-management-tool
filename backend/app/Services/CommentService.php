@@ -28,7 +28,7 @@ class CommentService
     {
         $comment->update(['content' => $content]);
 
-        return $comment->fresh();
+        return $comment->refresh()->load('user');
     }
 
     public function deleteComment(Comment $comment): void

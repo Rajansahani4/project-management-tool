@@ -35,16 +35,17 @@ function fileExtension(filename) {
         <!-- Info -->
         <div class="flex-1 min-w-0">
           <p class="truncate text-sm font-medium text-gray-900">{{ attachment.filename }}</p>
-          <p v-if="attachment.size" class="text-xs text-gray-400">
-            {{ formatFileSize(attachment.size) }}
+          <p v-if="attachment.file_size" class="text-xs text-gray-400">
+            {{ formatFileSize(attachment.file_size) }}
           </p>
         </div>
 
         <!-- Actions -->
         <div class="flex shrink-0 items-center gap-2">
           <a
-            v-if="attachment.url"
-            :href="attachment.url"
+            v-if="attachment.download_url"
+            :href="attachment.download_url"
+            target="_blank"
             download
             class="text-sm text-primary-600 hover:text-primary-800"
             aria-label="Download file"

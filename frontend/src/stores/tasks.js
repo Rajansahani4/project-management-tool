@@ -72,7 +72,9 @@ export const useTaskStore = defineStore('tasks', () => {
     try {
       const res = await tasksApi.update(projectId, taskId, payload)
       _upsert(res.data)
-      if (current.value?.id === taskId) current.value = res.data
+      if (Number(current.value?.id) === Number(taskId)) {
+        current.value = { ...current.value, ...res.data }
+      }
       return res.data
     } catch (err) {
       errors.value = err.errors ?? {}
@@ -86,8 +88,8 @@ export const useTaskStore = defineStore('tasks', () => {
     loading.value = true
     try {
       await tasksApi.destroy(projectId, taskId)
-      tasks.value = tasks.value.filter(t => t.id !== taskId)
-      if (current.value?.id === taskId) current.value = null
+      tasks.value = tasks.value.filter(t => t.id !== Number(taskId))
+      if (Number(current.value?.id) === Number(taskId)) current.value = null
     } catch (err) {
       errors.value = err.errors ?? {}
       throw err
@@ -101,7 +103,9 @@ export const useTaskStore = defineStore('tasks', () => {
     try {
       const res = await tasksApi.updateStatus(projectId, taskId, status)
       _upsert(res.data)
-      if (current.value?.id === taskId) current.value = res.data
+      if (Number(current.value?.id) === Number(taskId)) {
+        current.value = { ...current.value, ...res.data }
+      }
     } catch (err) {
       errors.value = err.errors ?? {}
       throw err
@@ -113,7 +117,9 @@ export const useTaskStore = defineStore('tasks', () => {
     try {
       const res = await tasksApi.assign(projectId, taskId, userId)
       _upsert(res.data)
-      if (current.value?.id === taskId) current.value = res.data
+      if (Number(current.value?.id) === Number(taskId)) {
+        current.value = { ...current.value, ...res.data }
+      }
     } catch (err) {
       errors.value = err.errors ?? {}
       throw err
@@ -125,7 +131,7 @@ export const useTaskStore = defineStore('tasks', () => {
     errors.value = {}
     try {
       const res = await commentsApi.create(projectId, taskId, payload)
-      if (current.value?.id === taskId) {
+      if (Number(current.value?.id) === Number(taskId)) {
         current.value.comments = [...(current.value.comments ?? []), res.data]
       }
       return res.data
@@ -139,7 +145,7 @@ export const useTaskStore = defineStore('tasks', () => {
     errors.value = {}
     try {
       const res = await commentsApi.update(projectId, taskId, commentId, payload)
-      if (current.value?.id === taskId) {
+      if (Number(current.value?.id) === Number(taskId)) {
         current.value.comments = current.value.comments.map(c =>
           c.id === commentId ? res.data : c
         )
@@ -154,7 +160,7 @@ export const useTaskStore = defineStore('tasks', () => {
   async function removeComment(projectId, taskId, commentId) {
     try {
       await commentsApi.destroy(projectId, taskId, commentId)
-      if (current.value?.id === taskId) {
+      if (Number(current.value?.id) === Number(taskId)) {
         current.value.comments = current.value.comments.filter(c => c.id !== commentId)
       }
     } catch (err) {
@@ -168,7 +174,7 @@ export const useTaskStore = defineStore('tasks', () => {
     errors.value = {}
     try {
       const res = await attachmentsApi.upload(projectId, taskId, file)
-      if (current.value?.id === taskId) {
+      if (Number(current.value?.id) === Number(taskId)) {
         current.value.attachments = [...(current.value.attachments ?? []), res.data]
       }
       return res.data
@@ -181,7 +187,7 @@ export const useTaskStore = defineStore('tasks', () => {
   async function removeAttachment(projectId, taskId, attachmentId) {
     try {
       await attachmentsApi.destroy(projectId, taskId, attachmentId)
-      if (current.value?.id === taskId) {
+      if (Number(current.value?.id) === Number(taskId)) {
         current.value.attachments = current.value.attachments.filter(
           a => a.id !== attachmentId
         )
@@ -223,7 +229,7 @@ export const useTaskStore = defineStore('tasks', () => {
   function _upsert(task) {
     const idx = tasks.value.findIndex(t => t.id === task.id)
     if (idx !== -1) {
-      tasks.value[idx] = task
+      tasks.value.splice(idx, 1, task)
     } else {
       tasks.value.unshift(task)
     }

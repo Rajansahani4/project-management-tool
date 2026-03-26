@@ -13,7 +13,7 @@ class ProjectService
 {
     public function index(User $user): LengthAwarePaginator
     {
-        return $user->projects()->latest()->paginate(15);
+        return $user->projects()->withCount(['members', 'tasks'])->latest()->paginate(15);
     }
 
     public function store(User $user, array $data): Project

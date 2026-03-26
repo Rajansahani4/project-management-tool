@@ -40,11 +40,11 @@ export const useMembersStore = defineStore('members', () => {
     }
   }
 
-  async function updateRole(pid, userId, role) {
+  async function updateRole(pid, memberId, role) {
     errors.value = {}
     try {
-      const res = await membersApi.updateRole(pid, userId, { role })
-      const idx = members.value.findIndex(m => m.user_id === userId || m.user?.id === userId)
+      const res = await membersApi.updateRole(pid, memberId, { role })
+      const idx = members.value.findIndex(m => m.id === memberId)
       if (idx !== -1) members.value[idx] = res.data
       return res.data
     } catch (err) {
@@ -53,13 +53,11 @@ export const useMembersStore = defineStore('members', () => {
     }
   }
 
-  async function remove(pid, userId) {
+  async function remove(pid, memberId) {
     errors.value = {}
     try {
-      await membersApi.remove(pid, userId)
-      members.value = members.value.filter(
-        m => m.user_id !== userId && m.user?.id !== userId
-      )
+      await membersApi.remove(pid, memberId)
+      members.value = members.value.filter(m => m.id !== memberId)
     } catch (err) {
       errors.value = err.errors ?? {}
       throw err

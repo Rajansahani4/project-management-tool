@@ -52,7 +52,7 @@ provide('sidebarCollapsed', sidebarCollapsed)
     <!-- Main column -->
     <div class="flex min-w-0 flex-1 flex-col overflow-hidden">
       <AppHeader @toggle-sidebar="toggleMobileSidebar" />
-      <main class="flex-1 overflow-y-auto">
+      <main class="flex-1 overflow-y-auto px-6 pt-4">
         <RouterView />
       </main>
     </div>
